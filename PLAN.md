@@ -1,7 +1,7 @@
 # Plano de Desenvolvimento: GKE Feature Demos
 
 - [x] Criar `.gitignore` para garantir que `.env`, chaves e credenciais nunca sejam commitados.
-- [ ] Criar template `.env.example` e scripts de infraestrutura GKE Autopilot (canal Stable) e Artifact Registry em `infra/` (`create-cluster.sh`, `get-credentials.sh`, `delete-cluster.sh`).
+- [x] Criar template `.env.example` e scripts de infraestrutura GKE Autopilot (canal Stable) e Artifact Registry em `infra/` (`create-cluster.sh`, `get-credentials.sh`, `delete-cluster.sh`).
 - [ ] Implementar a aplicação Java de teste em `demos/in_place_pod_resize/app/` com HttpServer embutido, simulando warmup de CPU e exibindo métricas de runtime (cores, uptime, PID).
 - [ ] Criar `Dockerfile` multi-stage para a aplicação Java.
 - [ ] Criar manifests Kubernetes em `demos/in_place_pod_resize/k8s/pod.yaml` e `service.yaml` configurados com `resizePolicy` (`cpu: NotRequired`).
