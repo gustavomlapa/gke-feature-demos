@@ -6,5 +6,5 @@
 - [x] Criar `Dockerfile` multi-stage para a aplicação Java.
 - [x] Criar manifests Kubernetes em `demos/in_place_pod_resize/k8s/pod.yaml` e `service.yaml` configurados com `resizePolicy` (`cpu: NotRequired`).
 - [x] Criar scripts de automação da demo (`01-build-and-push.sh`, `02-deploy.sh`, `03-watch-status.sh`, `04-resize-cpu.sh`, `05-cleanup.sh`).
-- [ ] Escrever a documentação completa `demos/in_place_pod_resize/README.md` detalhando a teoria do In-Place Pod Resize, passo a passo de execução, saídas esperadas de terminal e como validar o zero-downtime.
-- [ ] Atualizar o `README.md` principal da raiz com o índice de demonstrações e instruções gerais de uso e segurança.
+- [x] Escrever a documentação completa `demos/in_place_pod_resize/README.md` detalhando a teoria do In-Place Pod Resize, passo a passo de execução, saídas esperadas de terminal e como validar o zero-downtime.
+- [x] Atualizar o `README.md` principal da raiz com o índice de demonstrações e instruções gerais de uso e segurança.
