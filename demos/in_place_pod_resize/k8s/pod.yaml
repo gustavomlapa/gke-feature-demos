@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: java-startup-resize-demo
+  labels:
+    app: java-startup-resize-demo
+spec:
+  containers:
+  - name: java-app
+    image: IMAGE_PLACEHOLDER
+    imagePullPolicy: Always
+    ports:
+    - containerPort: 8080
+      name: http
+    env:
+    - name: WARMUP_SECONDS
+      value: "15"
+    resources:
+      requests:
+        cpu: "2"
+        memory: "512Mi"
+      limits:
+        cpu: "2"
+        memory: "512Mi"
+    resizePolicy:
+    - resourceName: cpu
+      restartPolicy: NotRequired
+    - resourceName: memory
+      restartPolicy: RestartContainer
+  restartPolicy: Never
