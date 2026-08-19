@@ -56,9 +56,14 @@ PATCH_JSON=$(cat <<EOF
 EOF
 )
 
-kubectl patch pod "${POD_NAME}" --patch "${PATCH_JSON}"
+# Tentar com subresource=resize (padrão Kubernetes moderno / GKE)
+if kubectl patch pod "${POD_NAME}" --subresource=resize --patch "${PATCH_JSON}" 2>/dev/null; then
+    echo -e "\n${GREEN}✔ Patch aplicado com sucesso via sub-recurso /resize!${NC}"
+else
+    echo -e "${YELLOW}Tentando aplicar patch direto no Pod...${NC}"
+    kubectl patch pod "${POD_NAME}" --patch "${PATCH_JSON}"
+fi
 
-echo -e "\n${GREEN}✔ Patch aplicado com sucesso!${NC}"
 echo -e "O Kubelet atualiza os cgroups de CPU do container no Node dinamicamente."
 
 # 3. Exibir estado após o patch
