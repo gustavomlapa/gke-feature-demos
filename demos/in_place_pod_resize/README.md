@@ -94,7 +94,8 @@ spec:
     - resourceName: cpu
       restartPolicy: NotRequired       # CPU é redimensionada sem reiniciar o container
     - resourceName: memory
-      restartPolicy: RestartContainer  # Para memória, se necessário pode exigir restart
+      restartPolicy: NotRequired       # Memória também é redimensionada sem reiniciar o container
+  restartPolicy: Always
 ```
 
 ---

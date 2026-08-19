@@ -26,5 +26,5 @@ spec:
     - resourceName: cpu
       restartPolicy: NotRequired
     - resourceName: memory
-      restartPolicy: RestartContainer
-  restartPolicy: Never
+      restartPolicy: NotRequired
+  restartPolicy: Always
