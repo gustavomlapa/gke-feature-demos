@@ -141,10 +141,17 @@ spec:
 
 ### Passo 4: Executar o In-Place Resize na Tela 2
 
-Em outro terminal ao lado do navegador, execute o resize:
+Você tem duas formas de executar o redimensionamento:
+
+#### Opção A (Automática via Script):
+Em outro terminal ao lado do navegador, execute o script:
 ```bash
 ./demos/in_place_pod_resize/scripts/04-resize-cpu.sh
 ```
+
+#### Opção B (Manual Passo a Passo via `kubectl`):
+Se preferir copiar e colar os comandos `kubectl` manualmente durante a apresentação para explicar cada etapa técnica (inspeção de spec, patch com `--subresource=resize`, verificação de zero restarts e cgroups), siga o guia dedicado:
+👉 [**Guia de Execução Manual Passo a Passo (MANUAL_RESIZE.md)**](MANUAL_RESIZE.md)
 
 ---
 
