@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: compute-classes-viewer
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: compute-classes-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "pods", "namespaces", "events"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["cloud.google.com"]
+  resources: ["computeclasses"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: compute-classes-reader-binding
+subjects:
+- kind: ServiceAccount
+  name: compute-classes-viewer
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: compute-classes-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compute-classes-dashboard
+  namespace: default
+  labels:
+    app: compute-classes-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compute-classes-dashboard
+  template:
+    metadata:
+      labels:
+        app: compute-classes-dashboard
+    spec:
+      serviceAccountName: compute-classes-viewer
+      containers:
+      - name: dashboard
+        image: IMAGE_PLACEHOLDER
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: compute-classes-dashboard-service
+  namespace: default
+  labels:
+    app: compute-classes-dashboard
+spec:
+  type: ClusterIP
+  selector:
+    app: compute-classes-dashboard
+  ports:
+  - port: 8080
+    targetPort: 8080

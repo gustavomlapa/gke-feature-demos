@@ -1,0 +1,15 @@
+apiVersion: cloud.google.com/v1
+kind: ComputeClass
+metadata:
+  name: resilient-cost-saver
+spec:
+  nodePoolAutoCreation:
+    enabled: true
+  priorities:
+    - machineFamily: n4
+      spot: true
+    - machineFamily: n4
+      spot: false
+    - machineFamily: n2
+      spot: false
+  whenUnsatisfiable: DoNotScaleUp

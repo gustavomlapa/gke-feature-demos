@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spot-batch-fallback-workload
+  labels:
+    app: spot-batch-fallback
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spot-batch-fallback
+  template:
+    metadata:
+      labels:
+        app: spot-batch-fallback
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: "resilient-cost-saver"
+      containers:
+      - name: batch-worker
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "1Gi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"

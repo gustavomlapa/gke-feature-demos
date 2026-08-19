@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autopilot-serverless-workload
+  labels:
+    app: autopilot-serverless
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: autopilot-serverless
+  template:
+    metadata:
+      labels:
+        app: autopilot-serverless
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: "autopilot"
+      containers:
+      - name: web
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legacy-standard-workload
+  labels:
+    app: legacy-standard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: legacy-standard
+  template:
+    metadata:
+      labels:
+        app: legacy-standard
+    spec:
+      containers:
+      - name: web
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
