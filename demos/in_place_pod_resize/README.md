@@ -1,6 +1,6 @@
 # Demo: In-Place Pod Resize no Google Kubernetes Engine (GKE)
 
-Esta demonstração apresenta na prática o recurso de **In-Place Resource Resize for Kubernetes Pods** (redimensionamento de recursos de Pods sem reinicialização).
+Esta demonstração apresenta na prática o recurso de **In-Place Resource Resize for Kubernetes Pods** (redimensionamento de recursos de Pods sem reinicialização) no Google Kubernetes Engine.
 
 ---
 
@@ -18,7 +18,7 @@ Com o recurso de In-Place Pod Resize, é possível alterar as cotas de CPU e Mem
 
 ## ☕ O Cenário da Demonstração: Java Startup CPU Boost
 
-Aplicações Java (Spring Boot, Quarkus, Micronaut, etc.) são notórias por demandarem **alta CPU durante o startup**:
+Aplicações Java (Spring Boot, Quarkus, Micronaut, etc.) demandam **alta CPU durante o startup**:
 - Carregamento de classes e reflexão
 - Compilação Just-In-Time (JIT) e otimizações C1/C2
 - Inicialização de pools de conexão e frameworks
@@ -28,17 +28,27 @@ Assim que a aplicação atinge prontidão (warmup concluído), a necessidade de 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Dev as Operador / Script
+    participant Dev as Operador (Terminal)
     participant K8s as GKE API / Kubelet
-    participant Pod as Pod Java (PID 1)
+    participant Pod as Pod Java (Web Dashboard)
     
     Note over Pod: Startup & Warmup (2 CPUs)
     Pod->>Pod: Compilação JIT e Warmup intensivo
     Note over Pod: Warmup concluído (Modo Idle)
     Dev->>K8s: kubectl patch pod (Reduz CPU para 500m)
     K8s->>Pod: Atualiza cgroups no Linux (Sem matar o processo!)
-    Note over Pod: Continua executando com 500m CPU<br/>(restartCount = 0 | PID inalterado)
+    Note over Pod: Dashboard Web continua ativo e fluido<br/>(Uptime ininterrupto | PID inalterado | restartCount = 0)
 ```
+
+---
+
+## 🖥️ Layout Recomendado para Apresentação (2 Telas)
+
+Para uma apresentação impactante, divida seu monitor em duas metades:
+
+| Lado Esquerdo: Navegador Web (Dashboard Java) | Lado Direito: Terminal (Operador) |
+|---|---|
+| **Dashboard Web em tempo real** mostrando Uptime contínuo, PID 1, pulso de vida verde e status de memória. | Terminal executando `./scripts/04-resize-cpu.sh` para redimensionar a CPU. |
 
 ---
 
@@ -48,16 +58,17 @@ sequenceDiagram
 demos/in_place_pod_resize/
 ├── README.md               # Este guia detalhado
 ├── app/                    # Aplicação Java de teste
-│   ├── src/                # Código fonte (HttpServer nativo, warmup e métricas)
+│   ├── src/                # Código fonte (HttpServer nativo com Web Dashboard integrado)
 │   └── Dockerfile          # Multi-stage build leve (Temurin 21)
 ├── k8s/                    # Manifests Kubernetes
 │   ├── pod.yaml            # Pod configurado com resizePolicy
 │   └── service.yaml        # Service ClusterIP
 └── scripts/                # Scripts de automação
-    ├── 01-build-and-push.sh # Build da imagem via Cloud Build
+    ├── 01-build-and-push.sh # Build da imagem via Google Cloud Build
     ├── 02-deploy.sh         # Deploy com cota inicial de 2 CPUs
-    ├── 03-watch-status.sh   # Painel de monitoramento interativo
-    ├── 04-resize-cpu.sh     # Executa o patch in-place para 500m
+    ├── 03-open-dashboard.sh # Abre o Dashboard Web no navegador (Tela 1)
+    ├── 03-watch-status.sh   # Alternativa: Painel de terminal em tempo real
+    ├── 04-resize-cpu.sh     # Executa o patch in-place para 500m (Tela 2)
     └── 05-cleanup.sh        # Remove os recursos da demo
 ```
 
@@ -86,124 +97,67 @@ spec:
       restartPolicy: RestartContainer  # Para memória, se necessário pode exigir restart
 ```
 
-Valores válidos para `restartPolicy`:
-- `NotRequired`: O Kubelet redimensiona o recurso ajustando os cgroups sem parar o container.
-- `RestartContainer`: O Kubelet reinicia o container para aplicar o novo limite.
-
 ---
 
-## 🚀 Passo a Passo para Apresentação da Demo
+## 🚀 Roteiro de Execução Passo a Passo
 
 ### Pré-requisitos
-1. Cluster GKE criado (veja instruções em [`infra/`](file:///Users/gustavolapa/dev/github/gke-feature-demos/infra/README.md)).
-2. Arquivo `.env` configurado com `PROJECT_ID`, `REGION`, etc.
+1. Cluster GKE Autopilot criado (veja instruções em [`infra/`](file:///Users/gustavolapa/dev/github/gke-feature-demos/infra/README.md)).
+2. Arquivo `.env` configurado na raiz com `PROJECT_ID`, `REGION`, etc.
 
 ---
 
 ### Passo 1: Compilar e Publicar a Imagem
-
-Execute o script de build via Google Cloud Build:
 ```bash
 ./demos/in_place_pod_resize/scripts/01-build-and-push.sh
 ```
-> O Cloud Build compilará o código Java e publicará a imagem no seu Google Artifact Registry sem precisar de Docker local.
+> O Cloud Build compilará o código Java e publicará a imagem no seu Google Artifact Registry.
 
 ---
 
 ### Passo 2: Fazer o Deploy Inicial (2 CPUs)
-
-Execute o deploy:
 ```bash
 ./demos/in_place_pod_resize/scripts/02-deploy.sh
 ```
 
-Saída esperada:
-```text
-Deploy do Pod Java com Alta CPU Inicial (Startup)
-CPU Inicial Solicitada: 2 CPUs (requests/limits: 2)
-Aguardando o Pod estar em estado 'Ready'...
-✔ Pod iniciado com sucesso!
-```
-
 ---
 
-### Passo 3: Abrir o Painel de Monitoramento (Terminal 1)
-
-Em uma janela de terminal, inicie o monitor em tempo real:
+### Passo 3: Abrir o Dashboard Web na Tela 1
 ```bash
-./demos/in_place_pod_resize/scripts/03-watch-status.sh
+./demos/in_place_pod_resize/scripts/03-open-dashboard.sh
 ```
+> Este comando inicia o encaminhamento de porta e abre automaticamente seu navegador em `http://localhost:8080`.
 
-Você verá o painel interativo exibindo:
-```text
-========================================================================
-        PAINEL DE STATUS - IN-PLACE POD RESIZE DEMO (GKE)              
-========================================================================
-Pod:           java-startup-resize-demo (Fase: Running)
-Node:          gk3-gke-demos-cluster-pool-1-abc1234
-Restart Count: 0 (ZERO RESTARTS - Processo contínuo!)
-------------------------------------------------------------------------
-RECURSOS CONFIGURADOS (Spec vs Status):
-  • Spec Desejado (requests / limits): 2 / 2
-  • Status Alocado no Node (Kubelet):  2
-  • Status do Resize:                  Completed / Steady
-------------------------------------------------------------------------
-ÚLTIMOS LOGS DO POD (Heartbeat & Warmup):
-[WARMUP COMPLETE] Startup phase finished.
-[WARMUP COMPLETE] Application in steady state idle.
-[WARMUP COMPLETE] Ready for In-Place CPU reduction without restart!
-[HEARTBEAT] PID: 1 | Uptime: 20s | Cores (JVM): 2 | Heap: 48MB/384MB | Warmup: DONE
-========================================================================
-```
+**O que apontar no Dashboard Web para a audiência:**
+- 🟢 **Pulso Verde**: O processo está respondendo continuamente.
+- ⏱️ **Uptime**: O relógio de tempo de atividade está correndo segundo a segundo.
+- 🆔 **PID 1**: O processo inicial da JVM.
+- 🔥 **Badge de Warmup**: Mostra a fase de inicialização inicial com alta CPU antes de estabilizar em repouso.
+
+*(Opcional: Você também pode usar `./demos/in_place_pod_resize/scripts/03-watch-status.sh` caso prefira monitorar em modo texto no terminal).*
 
 ---
 
-### Passo 4: Executar o In-Place Resize (Terminal 2)
+### Passo 4: Executar o In-Place Resize na Tela 2
 
-Em **outra janela de terminal**, execute a redução dinâmica de CPU:
+Em outro terminal ao lado do navegador, execute o resize:
 ```bash
 ./demos/in_place_pod_resize/scripts/04-resize-cpu.sh
 ```
 
-*(Opcional: Você pode passar um valor customizado, ex: `./demos/in_place_pod_resize/scripts/04-resize-cpu.sh 250m`)*
-
-Saída exibida:
-```text
-========================================================================
- Executando In-Place Pod Resize (Redução de CPU sem reiniciar o Pod)
-========================================================================
-Pod Alvo:            java-startup-resize-demo
-Container:           java-app
-Nova CPU Solicitada: 500m (requests e limits)
-------------------------------------------------------------------------
-Aplicando patch no Pod para redimensionar recursos in-place...
-pod/java-startup-resize-demo patched
-
-✔ Patch aplicado com sucesso!
-Estado APÓS o Resize:
-  • Novo Spec CPU:   500m
-  • Restart Count:   0 (Container PERMANECEU vivo sem reiniciar!)
-```
-
 ---
 
-## 🔍 O Que Mostrar Para Demonstrar Que Funcionou?
+## 🔍 O Que Destacar Durante a Demonstração
 
-Ao apresentar esta demonstração para um cliente ou time de engenharia, destaque os seguintes pontos:
-
-1. **`restartCount: 0`**:
-   Verifique no `kubectl get pod java-startup-resize-demo` que a coluna `RESTARTS` permanece `0`.
-2. **Process ID (PID) e Uptime ininterruptos**:
-   Conecte-se ao Pod e consulte o endpoint de status da aplicação Java:
-   ```bash
-   kubectl exec -it java-startup-resize-demo -- wget -qO- http://localhost:8080/status
-   ```
-   *Note que o `uptime_seconds` continuou crescendo continuamente e o `pid` não mudou!*
-3. **Eventos do Kubernetes**:
-   Execute `kubectl describe pod java-startup-resize-demo` e observe as mensagens de resize do Kubelet:
-   - Evento indicando que o Pod teve seus recursos redimensionados com sucesso no nó.
-4. **Alocação de cgroups no Node**:
-   O Kubelet atualizou o arquivo `cpu.max` (ou `cpu.cfs_quota_us`) diretamente no cgroup do contêiner.
+1. **Continuidade da Aplicação Web**:
+   Enquanto o comando no terminal aplica a nova cota de `500m`, olhe para o Dashboard Web:
+   - A página **NÃO cai** e **NÃO recarrega**.
+   - O contador de **Uptime NÃO reinicia do zero**.
+   - O **PID continua sendo 1**.
+2. **`restartCount = 0` no Kubernetes**:
+   Execute `kubectl get pod java-startup-resize-demo` para comprovar que a coluna `RESTARTS` é rigorosamente `0`.
+3. **Economia Imediata de Recursos**:
+   Demonstramos como liberar **1.5 CPUs** para o cluster GKE sem causar nenhum milissegundo de downtime aos usuários.
 
 ---
 

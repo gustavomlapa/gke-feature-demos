@@ -8,3 +8,6 @@
 - [x] Criar scripts de automação da demo (`01-build-and-push.sh`, `02-deploy.sh`, `03-watch-status.sh`, `04-resize-cpu.sh`, `05-cleanup.sh`).
 - [x] Escrever a documentação completa `demos/in_place_pod_resize/README.md` detalhando a teoria do In-Place Pod Resize, passo a passo de execução, saídas esperadas de terminal e como validar o zero-downtime.
 - [x] Atualizar o `README.md` principal da raiz com o índice de demonstrações e instruções gerais de uso e segurança.
+- [x] Atualizar a aplicação Java (`App.java`) para servir um Dashboard Web interativo em HTML/JS com métricas em tempo real (uptime contínuo, PID, Cores, heap e pulso visual).
+- [x] Criar script `03-open-dashboard.sh` para abrir a interface web no navegador via `kubectl port-forward`.
+- [x] Atualizar documentação `demos/in_place_pod_resize/README.md` com o roteiro de 2 telas (Web UI + Terminal).
