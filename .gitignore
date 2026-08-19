@@ -1,0 +1,33 @@
+# Ambientes e Variáveis Secretas
+.env
+*.env
+.env.*
+!.env.example
+infra/.env
+demos/*/.env
+
+# Google Cloud & Kubernetes Credenciais
+*.json
+*credentials*.json
+.gcloud/
+kubeconfig*
+*.kubeconfig
+
+# Java & Build Artifacts
+target/
+*.class
+*.jar
+*.war
+.gradle/
+build/
+
+# IDEs & Editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
